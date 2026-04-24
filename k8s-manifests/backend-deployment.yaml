@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz-backend
+  labels:
+    app: quiz-backend
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: quiz-backend
+  template:
+    metadata:
+      labels:
+        app: quiz-backend
+    spec:
+      containers:
+        - name: quiz-backend
+          image: raslenmissaoui061/quiz-backend:v1
+          ports:
+            - containerPort: 8080
+          resources:
+            requests:
+              memory: "64Mi"
+              cpu: "50m"
+            limits:
+              memory: "128Mi"
+              cpu: "100m"

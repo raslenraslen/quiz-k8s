@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>K8s Quiz Live</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #0f0c29, #302b63, #24243e);
+            color: #fff;
+            min-height: 100vh;
+        }
+
+        .header {
+            text-align: center;
+            padding: 30px 20px 10px;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            background: linear-gradient(90deg, #00d2ff, #7b2ff7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 5px;
+        }
+
+        .header p { color: #888; font-size: 1rem; }
+
+        .score-bar {
+            text-align: center;
+            padding: 10px;
+            font-size: 1.1rem;
+            color: #7b2ff7;
+            font-weight: 700;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .question-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(10px);
+        }
+
+        .question-number {
+            font-size: 0.75rem;
+            color: #7b2ff7;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            margin-bottom: 8px;
+        }
+
+        .question-difficulty {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 10px;
+            font-size: 0.65rem;
+            margin-left: 10px;
+            font-weight: 600;
+        }
+
+        .diff-easy { background: rgba(0,210,100,0.2); color: #00d264; }
+        .diff-medium { background: rgba(255,149,0,0.2); color: #ff9500; }
+
+        .question-text {
+            font-size: 1.3rem;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .option-btn {
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: #fff;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .option-btn:hover {
+            background: rgba(123, 47, 247, 0.3);
+            border-color: #7b2ff7;
+        }
+
+        .option-btn.correct {
+            background: rgba(0, 210, 100, 0.3);
+            border-color: #00d264;
+            pointer-events: none;
+        }
+
+        .option-btn.wrong {
+            background: rgba(255, 50, 50, 0.3);
+            border-color: #ff3232;
+            pointer-events: none;
+        }
+
+        .option-btn.disabled {
+            pointer-events: none;
+            opacity: 0.5;
+        }
+
+        .option-letter {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 0.9rem;
+            flex-shrink: 0;
+        }
+
+        .correct .option-letter { background: #00d264; color: #000; }
+        .wrong .option-letter { background: #ff3232; color: #fff; }
+
+        .result-text {
+            margin-top: 12px;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            display: none;
+        }
+
+        .result-text.show { display: block; }
+        .result-correct { background: rgba(0,210,100,0.15); color: #00d264; }
+        .result-wrong { background: rgba(255,50,50,0.15); color: #ff3232; }
+
+        .controls {
+            text-align: center;
+            padding: 20px;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+        }
+
+        .ctrl-btn {
+            background: linear-gradient(135deg, #7b2ff7, #5b1fd7);
+            border: none;
+            color: #fff;
+            padding: 12px 24px;
+            border-radius: 10px;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .ctrl-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(123, 47, 247, 0.4);
+        }
+
+        .ctrl-btn.danger {
+            background: linear-gradient(135deg, #ff3232, #cc0000);
+        }
+
+        @media (max-width: 600px) {
+            .header h1 { font-size: 1.8rem; }
+            .question-text { font-size: 1.1rem; }
+            .container { padding: 10px; }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>K8s Quiz Live</h1>
+        <p>Kubernetes Workshop — Test your knowledge</p>
+    </div>
+
+    <div class="score-bar" id="scoreBar">Score: 0 / 0</div>
+
+    <div class="container" id="quizContainer"></div>
+
+    <div class="controls">
+        <button class="ctrl-btn danger" onclick="resetQuiz()">Reset Quiz</button>
+    </div>
+
+    <script>
+        const API_URL = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1'
+            ? 'http://localhost:8080'
+            : `http://${window.location.hostname}:30080`;
+
+        let answers = {};
+        let score = 0;
+        let answered = 0;
+        let totalQuestions = 0;
+
+        async function loadQuestions() {
+            try {
+                const res = await fetch(`${API_URL}/api/questions`);
+                const questions = await res.json();
+                totalQuestions = questions.length;
+
+                const revealRes = await fetch(`${API_URL}/api/reveal`);
+                answers = await revealRes.json();
+
+                renderQuestions(questions);
+                updateScore();
+            } catch (err) {
+                document.getElementById('quizContainer').innerHTML =
+                    '<p style="text-align:center;color:#ff6b6b;">Cannot connect to backend. Make sure the service is running.</p>';
+            }
+        }
+
+        function renderQuestions(questions) {
+            const container = document.getElementById('quizContainer');
+            const letters = ['A', 'B', 'C', 'D'];
+
+            container.innerHTML = questions.map((q, idx) => {
+                return `
+                <div class="question-card" id="q${q.id}">
+                    <div class="question-number">
+                        Question ${q.id}
+                    </div>
+                    <div class="question-text">${q.text}</div>
+                    <div class="options">
+                        ${q.options.map((opt, i) => `
+                            <button class="option-btn" id="q${q.id}-opt${i}" onclick="answer(${q.id}, ${i})">
+                                <span class="option-letter">${letters[i]}</span>
+                                ${opt}
+                            </button>
+                        `).join('')}
+                    </div>
+                    <div class="result-text" id="result-${q.id}"></div>
+                </div>
+            `}).join('');
+        }
+
+        function answer(questionId, option) {
+            const correct = answers[questionId];
+            const allBtns = document.querySelectorAll(`#q${questionId} .option-btn`);
+
+            // Disable all buttons
+            allBtns.forEach(btn => btn.classList.add('disabled'));
+
+            // Mark correct answer green
+            document.getElementById(`q${questionId}-opt${correct}`).classList.add('correct');
+
+            // Show result
+            const resultEl = document.getElementById(`result-${questionId}`);
+            resultEl.classList.add('show');
+
+            if (option === correct) {
+                score++;
+                resultEl.textContent = 'Correct!';
+                resultEl.className = 'result-text show result-correct';
+            } else {
+                // Mark wrong answer red
+                document.getElementById(`q${questionId}-opt${option}`).classList.add('wrong');
+                resultEl.textContent = 'Wrong! The correct answer is highlighted in green.';
+                resultEl.className = 'result-text show result-wrong';
+            }
+
+            answered++;
+            updateScore();
+        }
+
+        function updateScore() {
+            document.getElementById('scoreBar').textContent = `Score: ${score} / ${answered} (${totalQuestions} questions)`;
+        }
+
+        async function resetQuiz() {
+            score = 0;
+            answered = 0;
+            await fetch(`${API_URL}/api/reset`, { method: 'POST' });
+            loadQuestions();
+        }
+
+        loadQuestions();
+    </script>
+</body>
+</html>

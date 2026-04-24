@@ -1,0 +1,28 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: quiz-frontend
+  labels:
+    app: quiz-frontend
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: quiz-frontend
+  template:
+    metadata:
+      labels:
+        app: quiz-frontend
+    spec:
+      containers:
+        - name: quiz-frontend
+          image: raslenmissaoui061/quiz-frontend:v1
+          ports:
+            - containerPort: 80
+          resources:
+            requests:
+              memory: "32Mi"
+              cpu: "25m"
+            limits:
+              memory: "64Mi"
+              cpu: "50m"
